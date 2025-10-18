@@ -28,6 +28,30 @@ add_library(cuda_kernels STATIC
 # Allow linking across multiple .cu files
 set_target_properties(cuda_kernels PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
+# === Unit Tests ===
+enable_testing()
+include(FetchContent)
+
+FetchContent_Declare(
+    googletest
+    URL https://github.com/google/googletest/archive/refs/heads/main.zip
+)
+FetchContent_MakeAvailable(googletest)
+
+add_executable(cuda_kernel_tests
+    tests/test_vector_add.cpp
+    tests/test_matrix_mul.cpp
+    tests/test_reduce.cpp
+    src/vector_add.cu
+    src/matrix_mul.cu
+    src/reduce.cu
+)
+target_link_libraries(cuda_kernel_tests
+    PRIVATE cuda_kernels GTest::gtest_main
+)
+include(GoogleTest)
+gtest_discover_tests(cuda_kernel_tests)
+
 # === Executable ===
 add_executable(examples
     src/main.cpp
