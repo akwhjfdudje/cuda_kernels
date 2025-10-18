@@ -26,8 +26,6 @@ add_library(cuda_kernels STATIC
     ${source}
 )
 
-target_include_directories(cuda_kernels PUBLIC ${CMAKE_SOURCE_DIR}/include)
-
 # Allow linking across multiple .cu files
 set_target_properties(cuda_kernels PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
