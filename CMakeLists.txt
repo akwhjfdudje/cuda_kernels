@@ -21,16 +21,20 @@ add_compile_options()
 # === CUDA Library ===
 add_library(cuda_kernels STATIC
     src/vector_add.cu
+    src/matrix_mul.cu
+    src/reduce.cu
 )
 
 # Allow linking across multiple .cu files
 set_target_properties(cuda_kernels PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
 # === Executable ===
-add_executable(vector_add_app
+add_executable(examples
     src/main.cpp
     src/vector_add.cu
+    src/matrix_mul.cu
+    src/reduce.cu
 )
 
-target_link_libraries(vector_add_app PRIVATE cuda_kernels)
+target_link_libraries(examples PRIVATE cuda_kernels)
 

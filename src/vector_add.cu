@@ -8,7 +8,7 @@ __global__ void vectorAddKernel(const float* A, const float* B, float* C, int N)
         C[i] = A[i] + B[i];
 }
 
-void launchVectorAdd(const float* A, const float* B, float* C, int N) {
+void vectorAdd(const float* A, const float* B, float* C, int N) {
     float *d_A, *d_B, *d_C;
     size_t size = N * sizeof(float);
 
