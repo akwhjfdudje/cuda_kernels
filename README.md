@@ -1,12 +1,10 @@
 # CUDA Kernels
 
-Some experiments on writing CUDA kernels 
+Some experiments on writing CUDA kernels.
 
-Future work involves putting these into a library for use with other projects
+Currently only tested on Windows.
 
 ## Building
-
-Currently only tested on Windows
 
 From this directory:
 ```
@@ -14,7 +12,7 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --config Release
 ```
 
-This will make an example executable in build/Release
+This will make an `examples.exe` executable in build/Release
 
 ## Testing
 
