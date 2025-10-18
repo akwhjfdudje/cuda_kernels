@@ -4,7 +4,7 @@
 
 #define TILE_DIM 16
 
-// Kernel: C = A * B
+// C = A * B
 __global__ void matrixMulKernel(const float* A, const float* B, float* C, int N) {
     __shared__ float tileA[TILE_DIM][TILE_DIM];
     __shared__ float tileB[TILE_DIM][TILE_DIM];

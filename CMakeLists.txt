@@ -11,18 +11,19 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CUDA_STANDARD 17)
 set(CMAKE_CUDA_ARCHITECTURES 75 86 89 90)
 
-
 # Add include directory
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 # Enable warnings
 add_compile_options()
 
+# Globbing
+file(GLOB source src/*.cu)
+file(GLOB test tests/*)
+
 # === CUDA Library ===
 add_library(cuda_kernels STATIC
-    src/vector_add.cu
-    src/matrix_mul.cu
-    src/reduce.cu
+    ${source}
 )
 
 # Allow linking across multiple .cu files
@@ -39,12 +40,8 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(googletest)
 
 add_executable(cuda_kernel_tests
-    tests/test_vector_add.cpp
-    tests/test_matrix_mul.cpp
-    tests/test_reduce.cpp
-    src/vector_add.cu
-    src/matrix_mul.cu
-    src/reduce.cu
+    ${test}
+    ${source}
 )
 target_link_libraries(cuda_kernel_tests
     PRIVATE cuda_kernels GTest::gtest_main

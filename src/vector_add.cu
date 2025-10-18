@@ -1,7 +1,7 @@
 #include "vector_add.cuh"
 #include <cuda_runtime.h>
-#include <iostream>
 
+// C = A + B
 __global__ void vectorAddKernel(const float* A, const float* B, float* C, int N) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < N)

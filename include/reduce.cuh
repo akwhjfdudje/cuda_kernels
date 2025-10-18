@@ -1,3 +1,3 @@
 #pragma once
 
-float reduceSum(const float* data, int N);
+float reduceSum(const float* A, int N);

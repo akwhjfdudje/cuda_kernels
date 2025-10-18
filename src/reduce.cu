@@ -2,7 +2,8 @@
 #include <cstdio>
 #include "reduce.cuh"
 
-__global__ void reduceKernel(const float* input, float* output, int N) {
+// B = sum(A)
+__global__ void reduceKernel(const float* A, float* B, int N) {
     extern __shared__ float sdata[];
 
     unsigned int tid = threadIdx.x;
@@ -10,9 +11,9 @@ __global__ void reduceKernel(const float* input, float* output, int N) {
     float sum = 0.0f;
 
     if (i < N)
-        sum = input[i];
+        sum = A[i];
     if (i + blockDim.x < N)
-        sum += input[i + blockDim.x];
+        sum += A[i + blockDim.x];
 
     sdata[tid] = sum;
     __syncthreads();
@@ -25,10 +26,10 @@ __global__ void reduceKernel(const float* input, float* output, int N) {
     }
 
     if (tid == 0)
-        output[blockIdx.x] = sdata[0];
+        B[blockIdx.x] = sdata[0];
 }
 
-float reduceSum(const float* data, int N) {
+float reduceSum(const float* A, int N) {
     float *dIn, *dOut;
     size_t size = N * sizeof(float);
     cudaMalloc(&dIn, size);
@@ -37,7 +38,7 @@ float reduceSum(const float* data, int N) {
     int blocks = (N + threads * 2 - 1) / (threads * 2);
     cudaMalloc(&dOut, blocks * sizeof(float));
 
-    cudaMemcpy(dIn, data, size, cudaMemcpyHostToDevice);
+    cudaMemcpy(dIn, A, size, cudaMemcpyHostToDevice);
 
     reduceKernel<<<blocks, threads, threads * sizeof(float)>>>(dIn, dOut, N);
 
