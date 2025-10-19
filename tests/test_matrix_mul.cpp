@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "matrix_mul.cuh"
+#include "linalg/linalg.cuh"
 #include <vector>
 
 TEST(MatrixMulKernel, BasicMultiplication) {

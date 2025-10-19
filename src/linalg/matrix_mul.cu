@@ -1,6 +1,6 @@
 #include <cuda_runtime.h>
 #include <cstdio>
-#include "matrix_mul.cuh"
+#include "linalg/linalg.cuh"
 
 #define TILE_DIM 16
 

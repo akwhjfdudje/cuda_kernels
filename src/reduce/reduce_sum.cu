@@ -1,9 +1,9 @@
 #include <cuda_runtime.h>
 #include <cstdio>
-#include "reduce.cuh"
+#include "reduce/reduce.cuh"
 
 // B = sum(A)
-__global__ void reduceKernel(const float* A, float* B, int N) {
+__global__ void reduceSumKernel(const float* A, float* B, int N) {
     extern __shared__ float sdata[];
 
     unsigned int tid = threadIdx.x;
@@ -40,7 +40,7 @@ float reduceSum(const float* A, int N) {
 
     cudaMemcpy(dIn, A, size, cudaMemcpyHostToDevice);
 
-    reduceKernel<<<blocks, threads, threads * sizeof(float)>>>(dIn, dOut, N);
+    reduceSumKernel<<<blocks, threads, threads * sizeof(float)>>>(dIn, dOut, N);
 
     float *hOut = new float[blocks];
     cudaMemcpy(hOut, dOut, blocks * sizeof(float), cudaMemcpyDeviceToHost);

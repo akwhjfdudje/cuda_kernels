@@ -1,14 +1,14 @@
 #include <cuda_runtime.h>
-#include "vector_add.cuh"
+#include "arith/arith.cuh"
 
 // C = A + B
-__global__ void vectorAddKernel(const float* A, const float* B, float* C, int N) {
+__global__ void vectorMulKernel(const float* A, const float* B, float* C, int N) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < N)
-        C[i] = A[i] + B[i];
+        C[i] = A[i] * B[i];
 }
 
-void vectorAdd(const float* A, const float* B, float* C, int N) {
+void vectorMul(const float* A, const float* B, float* C, int N) {
     float *d_A, *d_B, *d_C;
     size_t size = N * sizeof(float);
 
@@ -24,7 +24,7 @@ void vectorAdd(const float* A, const float* B, float* C, int N) {
     // Launch kernel
     int threads = 256;
     int blocks = (N + threads - 1) / threads;
-    vectorAddKernel<<<blocks, threads>>>(d_A, d_B, d_C, N);
+    vectorMulKernel<<<blocks, threads>>>(d_A, d_B, d_C, N);
 
     cudaDeviceSynchronize();
 

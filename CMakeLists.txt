@@ -18,7 +18,24 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 add_compile_options()
 
 # Globbing
-file(GLOB source src/*.cu)
+file(GLOB src_activate src/activate/*.cu)
+file(GLOB src_reduce src/reduce/*.cu)
+file(GLOB src_linalg src/linalg/*.cu)
+file(GLOB src_conv src/conv/*.cu)
+file(GLOB src_arith src/arith/*.cu)
+file(GLOB src_image src/image/*.cu)
+file(GLOB src_utils src/utils/*.cu)
+file(GLOB src_render src/render/*.cu)
+file(GLOB source 
+    ${src_activate}
+    ${src_reduce}
+    ${src_linalg}
+    ${src_conv}
+    ${src_arith}
+    ${src_image}
+    ${src_utils}
+    ${src_render}
+)
 file(GLOB test tests/*)
 
 # === CUDA Library ===
@@ -52,9 +69,9 @@ gtest_discover_tests(cuda_kernel_tests)
 # === Executable ===
 add_executable(examples
     src/main.cpp
-    src/vector_add.cu
-    src/matrix_mul.cu
-    src/reduce.cu
+    src/arith/vector_add.cu
+    src/linalg/matrix_mul.cu
+    src/reduce/reduce_sum.cu
 )
 
 target_link_libraries(examples PRIVATE cuda_kernels)

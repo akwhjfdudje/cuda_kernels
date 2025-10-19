@@ -1,14 +1,16 @@
 #include <cuda_runtime.h>
-#include "vector_sub.cuh"
+#include "arith/arith.cuh"
 
-// C = A + B
-__global__ void vectorSubKernel(const float* A, const float* B, float* C, int N) {
+// C = A / B
+__global__ void vectorDivKernel(const float* A, const float* B, float* C, int N) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
-    if (i < N)
-        C[i] = A[i] - B[i];
+    if (i < N) {
+        float d = B[i];
+        C[i] = (fabsf(d) > 1e-8f) ? (A[i] / d) : 0.0f;
+    }
 }
 
-void vectorSub(const float* A, const float* B, float* C, int N) {
+void vectorDiv(const float* A, const float* B, float* C, int N) {
     float *d_A, *d_B, *d_C;
     size_t size = N * sizeof(float);
 
@@ -24,7 +26,7 @@ void vectorSub(const float* A, const float* B, float* C, int N) {
     // Launch kernel
     int threads = 256;
     int blocks = (N + threads - 1) / threads;
-    vectorSubKernel<<<blocks, threads>>>(d_A, d_B, d_C, N);
+    vectorDivKernel<<<blocks, threads>>>(d_A, d_B, d_C, N);
 
     cudaDeviceSynchronize();
 

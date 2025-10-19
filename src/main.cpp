@@ -1,8 +1,8 @@
 #include <iostream>
 #include <vector>
-#include "vector_add.cuh"
-#include "matrix_mul.cuh"
-#include "reduce.cuh"
+#include "arith/arith.cuh"
+#include "linalg/linalg.cuh"
+#include "reduce/reduce.cuh"
 
 int main() {
     // Vector Add

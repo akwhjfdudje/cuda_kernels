@@ -3,7 +3,7 @@
 #include <vector>
 #include <cmath>
 
-TEST(VectorAddKernel, SmallArrays) {
+TEST(VectorMulKernel, SmallArrays) {
     int N = 256;
     std::vector<float> A(N), B(N), C(N);
 
@@ -12,14 +12,14 @@ TEST(VectorAddKernel, SmallArrays) {
         B[i] = static_cast<float>(N - i);
     }
 
-    vectorAdd(A.data(), B.data(), C.data(), N);
+    vectorMul(A.data(), B.data(), C.data(), N);
 
     for (int i = 0; i < N; ++i) {
-        EXPECT_NEAR(C[i], A[i] + B[i], 1e-5);
+        EXPECT_NEAR(C[i], A[i] * B[i], 1e-5);
     }
 }
 
-TEST(VectorAddKernel, LargeArrays) {
+TEST(VectorMulKernel, LargeArrays) {
     int N = 1 << 15;
     std::vector<float> A(N), B(N), C(N);
 
@@ -28,9 +28,9 @@ TEST(VectorAddKernel, LargeArrays) {
         B[i] = static_cast<float>(N - i);
     }
 
-    vectorAdd(A.data(), B.data(), C.data(), N);
+    vectorMul(A.data(), B.data(), C.data(), N);
 
     for (int i = 0; i < N; ++i) {
-        EXPECT_NEAR(C[i], A[i] + B[i], 1e-5);
+        EXPECT_NEAR(C[i], A[i] * B[i], 1e-5);
     }
 }
