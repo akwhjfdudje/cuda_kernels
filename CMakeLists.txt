@@ -68,7 +68,7 @@ gtest_discover_tests(cuda_kernel_tests)
 
 # === Executable ===
 add_executable(examples
-    src/main.cpp
+    src/examples.cpp
     src/arith/vector_add.cu
     src/linalg/matrix_mul.cu
     src/reduce/reduce_sum.cu
