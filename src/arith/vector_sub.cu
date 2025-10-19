@@ -1,7 +1,7 @@
 #include <cuda_runtime.h>
 #include "arith/arith.cuh"
 
-// C = A + B
+// C = A - B
 __global__ void vectorSubKernel(const float* A, const float* B, float* C, int N) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < N)
