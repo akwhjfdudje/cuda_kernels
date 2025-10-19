@@ -2,8 +2,6 @@
 
 Some experiments on writing CUDA kernels.
 
-Currently only tested on Windows.
-
 ## Building
 
 From this directory:
