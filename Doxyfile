@@ -20,7 +20,6 @@
 # === Project Info ===
 PROJECT_NAME           = "cuda_kernels"
 PROJECT_BRIEF          = "A collection of CUDA kernels for various purposes"
-#PROJECT_LOGO           = docs/logo.png
 OUTPUT_DIRECTORY       = docs/doxygen
 GENERATE_HTML          = YES
 GENERATE_LATEX         = NO
@@ -58,4 +57,3 @@ HTML_OUTPUT            = html
 HTML_COLORSTYLE_HUE    = 220
 HTML_COLORSTYLE_SAT    = 150
 HTML_COLORSTYLE_GAMMA  = 80
-#HTML_EXTRA_STYLESHEET  = docs/doxygen/custom.css
