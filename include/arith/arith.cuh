@@ -5,3 +5,4 @@
 #include "vector_mul.cuh"
 #include "vector_div.cuh"
 #include "vector_pow.cuh"
+#include "vector_sqrt.cuh"
