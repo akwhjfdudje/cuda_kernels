@@ -12,7 +12,7 @@ cmake --build build --config Release
 
 The compiled kernels will be in `cuda_kernels.lib`
 
-This will also generate an `examples.exe` executable in build/Release (check src/main.cpp):
+This will also generate an `examples.exe` executable in build/Release (check src/examples.cpp):
 
 ```
 .\build\Release\examples.exe

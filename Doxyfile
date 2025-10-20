@@ -33,6 +33,7 @@ INPUT                  = include src README.md
 FILE_PATTERNS          = *.h *.hpp *.cuh *.cu *.md
 RECURSIVE              = YES
 EXTENSION_MAPPING      = cu=C++ cuh=C++
+EXCLUDE                = include
 
 # === Documentation Style ===
 EXTRACT_PRIVATE        = NO
