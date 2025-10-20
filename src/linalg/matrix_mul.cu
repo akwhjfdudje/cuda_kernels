@@ -1,6 +1,6 @@
 /**
  * @file linalg/matrix_mul.cu
- * @brief General matrix multiplication Nxk * kxM.
+ * @brief Square matrix multiplication NxN * NxN.
  */
 
 #include <cuda_runtime.h>
@@ -13,10 +13,10 @@
  * @brief Performs a matrix multiplication on A and B: 
  *        C = A * B
  *
- * @param A Pointer to input array A
- * @param B Pointer to input array B
- * @param C Pointer to output array C
- * @param N Number of elements
+ * @param A Pointer to input matrix A
+ * @param B Pointer to input matrix B
+ * @param C Pointer to output matrix C
+ * @param N Size of matrices
  */
 __global__ void matrixMulKernel(const float* A, const float* B, float* C, int N) {
     __shared__ float tileA[TILE_DIM][TILE_DIM];
