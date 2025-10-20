@@ -4,7 +4,7 @@ Some experiments on writing CUDA kernels.
 
 ## Building
 
-From this directory:
+In root directory:
 ```
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --config Release
@@ -22,11 +22,25 @@ This will also generate an `examples.exe` executable in build/Release (check src
 
 Using GoogleTest for testing kernels.
 
-From this directory:
+In root directory:
 ```
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --config Release
 
 cd build
 ctest --output-on-failure
+```
+
+## Documentation
+
+In root directory:
+```
+mkdir docs
+mkdir docs/doxygen
+doxygen
+```
+
+To regenerate:
+```
+doxygen
 ```

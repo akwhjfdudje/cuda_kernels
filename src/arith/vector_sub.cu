@@ -1,10 +1,10 @@
-#include <cuda_runtime.h>
-#include "arith/arith.cuh"
-
 /**
  * @file arith/vector_sub.cu
  * @brief Elementwise subtraction of two contiguous float arrays on the GPU.
  */
+
+#include <cuda_runtime.h>
+#include "arith/arith.cuh"
 
 /**
  * @brief Performs elementwise addition: C[i] = A[i] - B[i]
@@ -19,6 +19,14 @@ __global__ void vectorSubKernel(const float* A, const float* B, float* C, int N)
         C[i] = A[i] - B[i];
 }
 
+/**
+ * @brief Host launcher for the elementwise subtraction kernel.
+ * 
+ * @param A Pointer to device array A.
+ * @param B Pointer to device array B.
+ * @param C Pointer to device array for results.
+ * @param N Number of elements to process.
+ */
 void vectorSub(const float* A, const float* B, float* C, int N) {
     float *d_A, *d_B, *d_C;
     size_t size = N * sizeof(float);

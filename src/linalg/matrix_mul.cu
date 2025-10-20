@@ -1,13 +1,13 @@
+/**
+ * @file linalg/matrix_mul.cu
+ * @brief General matrix multiplication Nxk * kxM.
+ */
+
 #include <cuda_runtime.h>
 #include <cstdio>
 #include "linalg/linalg.cuh"
 
 #define TILE_DIM 16
-
-/**
- * @file linalg/matrix_mul.cu
- * @brief General matrix multiplication Nxk * kxM.
- */
 
 /**
  * @brief Performs a matrix multiplication on A and B: C = A * B
@@ -47,6 +47,14 @@ __global__ void matrixMulKernel(const float* A, const float* B, float* C, int N)
         C[row * N + col] = value;
 }
 
+/**
+ * @brief Host launcher for the matrix multiplication kernel.
+ * 
+ * @param A Pointer to device array A.
+ * @param B Pointer to device array B.
+ * @param C Pointer to device array for results.
+ * @param N Number of elements to process.
+ */
 void matrixMul(const float* A, const float* B, float* C, int N) {
     float *dA, *dB, *dC;
     size_t size = N * N * sizeof(float);

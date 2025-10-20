@@ -1,11 +1,11 @@
-#include <cuda_runtime.h>
-#include <cstdio>
-#include "reduce/reduce.cuh"
-
 /**
  * @file reduce/reduce_sum.cu
  * @brief Reduction sum of an input array on the GPU.
  */
+
+#include <cuda_runtime.h>
+#include <cstdio>
+#include "reduce/reduce.cuh"
 
 /**
  * @brief Performs a reduction sum: B = sum(A)
@@ -39,6 +39,13 @@ __global__ void reduceSumKernel(const float* A, float* B, int N) {
         B[blockIdx.x] = sdata[0];
 }
 
+/**
+ * @brief Host launcher for the reduce sum kernel.
+ * 
+ * @param A Pointer to device array A.
+ * @param N Number of elements to process.
+ * @return The reduced sum of A: sum(A)
+ */
 float reduceSum(const float* A, int N) {
     float *dIn, *dOut;
     size_t size = N * sizeof(float);
