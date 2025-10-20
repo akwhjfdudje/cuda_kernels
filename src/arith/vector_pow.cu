@@ -20,7 +20,7 @@ __global__ void vectorPowKernel(const float* A, const float* B, float* C, int N)
 }
 
 /**
- * @brief Host launcher for the elementwise multiplication kernel.
+ * @brief Host launcher for the elementwise power kernel.
  * 
  * @param A Pointer to device array A.
  * @param B Pointer to device array B.
