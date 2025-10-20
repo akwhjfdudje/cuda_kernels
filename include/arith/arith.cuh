@@ -7,3 +7,4 @@
 #include "vector_pow.cuh"
 #include "vector_sqrt.cuh"
 #include "vector_exp.cuh"
+#include "vector_log.cuh"
