@@ -1,7 +1,18 @@
 #include <cuda_runtime.h>
 #include "arith/arith.cuh"
 
-// C = A + B
+/**
+ * @file arith/vector_add.cu
+ * @brief Elementwise addition of two contiguous float arrays on the GPU.
+ */
+
+/**
+ * @brief Performs elementwise addition: C[i] = A[i] + B[i]
+ * @param A Pointer to input array A
+ * @param B Pointer to input array B
+ * @param C Pointer to output array C
+ * @param N Number of elements
+ */
 __global__ void vectorAddKernel(const float* A, const float* B, float* C, int N) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < N)

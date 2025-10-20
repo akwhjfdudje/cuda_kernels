@@ -2,7 +2,17 @@
 #include <cstdio>
 #include "reduce/reduce.cuh"
 
-// B = sum(A)
+/**
+ * @file reduce/reduce_sum.cu
+ * @brief Reduction sum of an input array on the GPU.
+ */
+
+/**
+ * @brief Performs a reduction sum: B = sum(A)
+ * @param A Pointer to input array A
+ * @param B Pointer to output array B
+ * @param N Number of elements
+ */
 __global__ void reduceSumKernel(const float* A, float* B, int N) {
     extern __shared__ float sdata[];
 

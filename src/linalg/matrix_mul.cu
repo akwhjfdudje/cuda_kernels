@@ -4,7 +4,18 @@
 
 #define TILE_DIM 16
 
-// C = A * B
+/**
+ * @file linalg/matrix_mul.cu
+ * @brief General matrix multiplication Nxk * kxM.
+ */
+
+/**
+ * @brief Performs a matrix multiplication on A and B: C = A * B
+ * @param A Pointer to input array A
+ * @param B Pointer to input array B
+ * @param C Pointer to output array C
+ * @param N Number of elements
+ */
 __global__ void matrixMulKernel(const float* A, const float* B, float* C, int N) {
     __shared__ float tileA[TILE_DIM][TILE_DIM];
     __shared__ float tileB[TILE_DIM][TILE_DIM];
