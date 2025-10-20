@@ -10,7 +10,9 @@
 #define TILE_DIM 16
 
 /**
- * @brief Performs a matrix multiplication on A and B: C = A * B
+ * @brief Performs a matrix multiplication on A and B: 
+ *        C = A * B
+ *
  * @param A Pointer to input array A
  * @param B Pointer to input array B
  * @param C Pointer to output array C

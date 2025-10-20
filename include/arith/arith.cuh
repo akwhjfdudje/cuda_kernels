@@ -6,3 +6,4 @@
 #include "vector_div.cuh"
 #include "vector_pow.cuh"
 #include "vector_sqrt.cuh"
+#include "vector_exp.cuh"

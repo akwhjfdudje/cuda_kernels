@@ -3,7 +3,7 @@
 #include <vector>
 #include <cmath>
 
-TEST(VectorSqrtKernel, SmallArrays) {
+TEST(VectorExpKernel, SmallArrays) {
     int N = 256;
     std::vector<float> A(N), B(N);
 
@@ -11,16 +11,16 @@ TEST(VectorSqrtKernel, SmallArrays) {
         A[i] = static_cast<float>(i);
     }
 
-    vectorSqrt(A.data(), B.data(), N);
+    vectorExp(A.data(), B.data(), N);
 
     for (int i = 0; i < N; ++i) {
-        float expected = sqrtf(A[i]);
+        float expected = expf(A[i]);
         float tol = 1e-5f * fmax(1.0f, fabs(expected));
         EXPECT_NEAR(B[i], expected, tol);
     }
 }
 
-TEST(VectorSqrtKernel, LargeArrays) {
+TEST(VectorExpKernel, LargeArrays) {
     int N = 1 << 15;
     std::vector<float> A(N), B(N);
 
@@ -28,10 +28,10 @@ TEST(VectorSqrtKernel, LargeArrays) {
         A[i] = static_cast<float>(i);
     }
 
-    vectorSqrt(A.data(), B.data(), N);
+    vectorExp(A.data(), B.data(), N);
 
     for (int i = 0; i < N; ++i) {
-        float expected = sqrtf(A[i]);
+        float expected = expf(A[i]);
         float tol = 1e-5f * fmax(1.0f, fabs(expected));
         EXPECT_NEAR(B[i], expected, tol);
     }

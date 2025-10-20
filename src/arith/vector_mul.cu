@@ -7,7 +7,9 @@
 #include "arith/arith.cuh"
 
 /**
- * @brief Performs elementwise multiplication: C[i] = A[i] * B[i]
+ * @brief Performs elementwise multiplication: 
+ *        C[i] = A[i] * B[i]
+ *
  * @param A Pointer to input array A
  * @param B Pointer to input array B
  * @param C Pointer to output array C
