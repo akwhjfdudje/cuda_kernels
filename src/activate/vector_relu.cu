@@ -3,9 +3,18 @@
  * @brief Elementwise ReLU of a floats array on the GPU.
  */
 
+#include <iostream>
 #include <cuda_runtime.h>
 #include "activate/activate.cuh"
-
+#define CHECK_CUDA(call) do {                                 \
+    cudaError_t err = call;                                   \
+    if (err != cudaSuccess) {                                 \
+        std::cerr << "CUDA error at " << __FILE__ << ":"      \
+                  << __LINE__ << " — "                        \
+                  << cudaGetErrorString(err) << std::endl;    \
+        exit(EXIT_FAILURE);                                   \
+    }                                                         \
+} while (0)
 /**
  * @brief Performs elementwise ReLU: B[i] = ReLU(A[i])
  * @param A Pointer to input array A
@@ -41,6 +50,7 @@ void vectorReLU(const float* A, float* B, int N) {
     int threads = 256;
     int blocks = (N + threads - 1) / threads;
     vectorReLUKernel<<<blocks, threads>>>(d_A, d_B, N);
+    CHECK_CUDA(cudaGetLastError());           // catch launch errors
 
     cudaDeviceSynchronize();
 

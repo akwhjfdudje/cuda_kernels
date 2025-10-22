@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.18)
 project(cuda_kernels LANGUAGES CXX CUDA)
+set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -G -g")
 
 # Set runtime library at top
 if (MSVC)
@@ -23,6 +24,7 @@ file(GLOB src_reduce src/reduce/*.cu)
 file(GLOB src_linalg src/linalg/*.cu)
 file(GLOB src_conv src/conv/*.cu)
 file(GLOB src_arith src/arith/*.cu)
+file(GLOB src_fused src/fused/*.cu)
 file(GLOB src_image src/image/*.cu)
 file(GLOB src_utils src/utils/*.cu)
 file(GLOB src_render src/render/*.cu)
@@ -32,6 +34,7 @@ file(GLOB source
     ${src_linalg}
     ${src_conv}
     ${src_arith}
+    ${src_fused}
     ${src_image}
     ${src_utils}
     ${src_render}
@@ -39,6 +42,8 @@ file(GLOB source
 file(GLOB test tests/*)
 
 # === CUDA Library ===
+# Contains everything 
+# TODO: generate separate libraries for each subsection
 add_library(cuda_kernels STATIC
     ${source}
 )
@@ -66,7 +71,7 @@ target_link_libraries(cuda_kernel_tests
 include(GoogleTest)
 gtest_discover_tests(cuda_kernel_tests)
 
-# === Executable ===
+# === Example executable ===
 add_executable(examples
     src/examples.cpp
     src/arith/vector_add.cu
