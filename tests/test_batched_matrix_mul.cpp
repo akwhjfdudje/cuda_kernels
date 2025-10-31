@@ -32,6 +32,8 @@ static void cpuBatchedMatMul(const std::vector<float>& A,
  * @brief Test small batch matrix multiplication for correctness.
  */
 TEST(BatchedMatrixMulKernel, SmallBatch) {
+
+    // TODO: figure out why this takes more time than ModerateBatch
     int N = 8;
     int batch = 4;
     std::vector<float> A(batch * N * N);
