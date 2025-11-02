@@ -1,3 +1,3 @@
 #pragma once
 
-void vectorLog(const float* A, float* B, int N);
+extern "C" CUDA_KERNELS_API void vectorLog(const float* A, float* B, int N);

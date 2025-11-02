@@ -65,7 +65,7 @@ __global__ void batchedMatrixMulKernel(const float* A, const float* B, float* C,
  * @param N Dimension of each matrix
  * @param batch Number of matrices in the batch
  */
-void batchedMatrixMul(const float* A, const float* B, float* C, int N, int batch) {
+extern "C" CUDA_KERNELS_API void batchedMatrixMul(const float* A, const float* B, float* C, int N, int batch) {
     float *dA, *dB, *dC;
     size_t size = (size_t)batch * N * N * sizeof(float);
 

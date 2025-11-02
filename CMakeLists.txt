@@ -1,24 +1,21 @@
 cmake_minimum_required(VERSION 3.18)
 project(cuda_kernels LANGUAGES CXX CUDA)
-set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -G -g")
 
-# Set runtime library at top
-if (MSVC)
+# === Compiler settings ===
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CUDA_STANDARD 17)
+set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+set(CMAKE_CUDA_ARCHITECTURES 75 86 89 90)
+
+if(MSVC)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 endif()
 
-# === Build Settings ===
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CUDA_STANDARD 17)
-set(CMAKE_CUDA_ARCHITECTURES 75 86 89 90)
+# Debug device flags
+set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -G -g")
 
-# Add include directory
-include_directories(${PROJECT_SOURCE_DIR}/include)
-
-# Enable warnings
-add_compile_options()
-
-# Globbing
+# === Globbing source files ===
 file(GLOB src_activate src/activate/*.cu)
 file(GLOB src_reduce src/reduce/*.cu)
 file(GLOB src_linalg src/linalg/*.cu)
@@ -28,7 +25,8 @@ file(GLOB src_fused src/fused/*.cu)
 file(GLOB src_image src/image/*.cu)
 file(GLOB src_utils src/utils/*.cu)
 file(GLOB src_render src/render/*.cu)
-file(GLOB source 
+
+set(source
     ${src_activate}
     ${src_reduce}
     ${src_linalg}
@@ -39,17 +37,25 @@ file(GLOB source
     ${src_utils}
     ${src_render}
 )
+
 file(GLOB test tests/*)
 
 # === CUDA Library ===
-# Contains everything 
-# TODO: generate separate libraries for each subsection
-add_library(cuda_kernels STATIC
-    ${source}
-)
+add_library(cuda_kernels SHARED ${source})
 
 # Allow linking across multiple .cu files
-set_target_properties(cuda_kernels PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+set_target_properties(cuda_kernels PROPERTIES 
+    CUDA_SEPARABLE_COMPILATION ON
+    POSITION_INDEPENDENT_CODE ON
+)
+
+# Export DLL symbols
+target_compile_definitions(cuda_kernels PRIVATE CUDA_KERNELS_EXPORTS)
+
+# Include directories
+target_include_directories(cuda_kernels
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
 
 # === Unit Tests ===
 enable_testing()
@@ -62,16 +68,23 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(googletest)
 
 add_executable(cuda_kernel_tests
-    ${test}
-    ${source}
+    ${test}  # test cpp files only
 )
+
 target_link_libraries(cuda_kernel_tests
     PRIVATE cuda_kernels GTest::gtest_main
 )
+
+target_include_directories(cuda_kernel_tests
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
 include(GoogleTest)
 gtest_discover_tests(cuda_kernel_tests)
 
 # === Example executable ===
+# Does not compile yet
+# TODO: make it compile
 add_executable(examples
     src/examples.cpp
     src/arith/vector_add.cu
@@ -80,4 +93,4 @@ add_executable(examples
 )
 
 target_link_libraries(examples PRIVATE cuda_kernels)
-
+target_include_directories(examples PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)

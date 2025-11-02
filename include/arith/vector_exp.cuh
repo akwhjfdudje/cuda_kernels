@@ -1,3 +1,3 @@
 #pragma once
 
-void vectorExp(const float* A, float* B, int N);
+extern "C" CUDA_KERNELS_API void vectorExp(const float* A, float* B, int N);

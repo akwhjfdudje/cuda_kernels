@@ -57,7 +57,7 @@ __global__ void matrixMulKernel(const float* A, const float* B, float* C, int N)
  * @param C Pointer to device array for results.
  * @param N Number of elements to process.
  */
-void matrixMul(const float* A, const float* B, float* C, int N) {
+extern "C" CUDA_KERNELS_API void matrixMul(const float* A, const float* B, float* C, int N) {
     float *dA, *dB, *dC;
     size_t size = N * N * sizeof(float);
 

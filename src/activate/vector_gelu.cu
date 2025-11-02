@@ -31,7 +31,7 @@ __global__ void vectorGELUKernel(const float* A, float* B, int N) {
  * @param B Pointer to device array for results.
  * @param N Number of elements to process.
  */
-void vectorGELU(const float* A, float* B, int N) {
+extern "C" CUDA_KERNELS_API void vectorGELU(const float* A, float* B, int N) {
     float *d_A, *d_B;
     size_t size = N * sizeof(float);
 

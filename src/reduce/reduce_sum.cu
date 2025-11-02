@@ -46,7 +46,7 @@ __global__ void reduceSumKernel(const float* A, float* B, int N) {
  * @param N Number of elements to process.
  * @return The reduced sum of A: sum(A)
  */
-float reduceSum(const float* A, int N) {
+extern "C" CUDA_KERNELS_API float reduceSum(const float* A, int N) {
     float *dIn, *dOut;
     size_t size = N * sizeof(float);
     cudaMalloc(&dIn, size);

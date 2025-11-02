@@ -77,7 +77,7 @@ __global__ void softmaxKernel(const float* input, float* output, int batch_size,
  * @param batch_size Number of rows
  * @param features Number of columns per row
  */
-void softmax(const float* input, float* output, int batch_size, int features) {
+extern "C" CUDA_KERNELS_API void softmax(const float* input, float* output, int batch_size, int features) {
     float *d_in, *d_out;
     size_t size = batch_size * features * sizeof(float);
 

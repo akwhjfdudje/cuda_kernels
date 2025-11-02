@@ -1,3 +1,3 @@
 #pragma once
 
-float reduceSum(const float* A, int N);
+extern "C" CUDA_KERNELS_API float reduceSum(const float* A, int N);
