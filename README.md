@@ -10,13 +10,15 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --config Release
 ```
 
-The compiled kernels will be in `cuda_kernels.lib`
+The compiled kernels will be in `cuda_kernels.dll/so`
 
 This will also generate an `examples.exe` executable in build/Release (check src/examples.cpp):
 
 ```
 .\build\Release\examples.exe
 ```
+
+Note: the library is compiled dynamically; make sure everything links appropriately when using
 
 ## Testing
 

@@ -87,9 +87,6 @@ gtest_discover_tests(cuda_kernel_tests)
 # TODO: make it compile
 add_executable(examples
     src/examples.cpp
-    src/arith/vector_add.cu
-    src/linalg/matrix_mul.cu
-    src/reduce/reduce_sum.cu
 )
 
 target_link_libraries(examples PRIVATE cuda_kernels)
