@@ -72,7 +72,7 @@ add_executable(cuda_kernel_tests
 )
 
 target_link_libraries(cuda_kernel_tests
-    PRIVATE cuda_kernels GTest::gtest_main
+    PRIVATE cuda_kernels GTest::gtest_main cudart
 )
 
 target_include_directories(cuda_kernel_tests

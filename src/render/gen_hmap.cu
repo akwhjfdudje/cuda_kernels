@@ -9,24 +9,20 @@
 
 #define THREADS_PER_BLOCK 256
 
-// Hash function for pseudo-random gradients
 __device__ inline float hash(int x, int y, int seed = 1337) {
     int n = x + y * 57 + seed * 131;
     n = (n << 13) ^ n;
     return (1.0f - ((n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff) / 1073741824.0f);
 }
 
-// Fade function (smoothstep curve for interpolation)
 __device__ inline float fade(float t) {
     return t * t * t * (t * (t * 6 - 15) + 10);
 }
 
-// Linear interpolation
 __device__ inline float lerp(float a, float b, float t) {
     return a + t * (b - a);
 }
 
-// 2D gradient noise (Perlin)
 __device__ float perlin(float x, float y, int seed) {
     int x0 = floorf(x);
     int y0 = floorf(y);
@@ -46,7 +42,6 @@ __device__ float perlin(float x, float y, int seed) {
     return lerp(ix0, ix1, sy);
 }
 
-// Voronoi distance field
 __device__ float voronoi(float x, float y, int cell_count, int seed) {
     int xi = floorf(x);
     int yi = floorf(y);
