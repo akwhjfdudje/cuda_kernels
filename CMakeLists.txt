@@ -8,6 +8,8 @@ set(CMAKE_CUDA_STANDARD 17)
 set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 set(CMAKE_CUDA_ARCHITECTURES 75 86 89 90)
 
+find_package(CUDAToolkit REQUIRED)
+
 if(MSVC)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 endif()
@@ -72,7 +74,7 @@ add_executable(cuda_kernel_tests
 )
 
 target_link_libraries(cuda_kernel_tests
-    PRIVATE cuda_kernels GTest::gtest_main cudart
+    PRIVATE cuda_kernels GTest::gtest_main CUDA::cudart
 )
 
 target_include_directories(cuda_kernel_tests
