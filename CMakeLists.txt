@@ -68,7 +68,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(googletest)
 
 add_executable(cuda_kernel_tests
-    ${test}  # test cpp files only
+    ${test}
 )
 
 target_link_libraries(cuda_kernel_tests
@@ -82,9 +82,7 @@ target_include_directories(cuda_kernel_tests
 include(GoogleTest)
 gtest_discover_tests(cuda_kernel_tests)
 
-# === Example executable ===
-# Does not compile yet
-# TODO: make it compile
+# === Examples ===
 add_executable(examples
     src/examples.cpp
 )

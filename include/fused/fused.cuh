@@ -10,3 +10,4 @@
 #pragma once
 
 #include "fused_sdpa.cuh"
+#include "fused_mesh_gen.cuh"
