@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <vector>
+#include <cmath>
 #include "activate/activate.cuh"
 
 TEST(VectorReLUKernel, BasicPositiveAndNegative) {
