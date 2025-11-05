@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include "linalg/linalg.cuh"
 #include <vector>
+#include <cmath>
 
 TEST(MatrixMulKernel, BasicMultiplication) {
     int N = 16;
