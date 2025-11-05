@@ -77,7 +77,7 @@ TEST(BatchedMatrixMulKernel, ModerateBatch) {
 
     for (int i = 0; i < batch * N * N; ++i) {
         float expected = C_ref[i];
-        float tol = 1e-3f * std::max(1.0f, fabs(expected));
+        float tol = 1e-3f * std::max(1.0f, (float)fabs(expected));
         EXPECT_NEAR(C[i], expected, tol) << "Mismatch at index " << i;
     }
 }
