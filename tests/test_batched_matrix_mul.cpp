@@ -5,77 +5,94 @@
 #include <algorithm>
 
 /**
- * @brief CPU reference implementation for batched matrix multiplication.
+ * @brief CPU reference implementation for batched matrix multiplication:
+ *        C[b] = A[b] (M×K)  ×  B[b] (K×N)
  */
-static void cpuBatchedMatMul(const std::vector<float>& A,
-                             const std::vector<float>& B,
-                             std::vector<float>& C,
-                             int N, int batch)
+static void cpuBatchedMatMul(
+        const std::vector<float>& A,
+        const std::vector<float>& B,
+        std::vector<float>& C,
+        int M, int K, int N,
+        int batch)
 {
     for (int b = 0; b < batch; ++b) {
-        const float* batchA = &A[b * N * N];
-        const float* batchB = &B[b * N * N];
-        float* batchC = &C[b * N * N];
+        const float* A_b = &A[b * M * K];
+        const float* B_b = &B[b * K * N];
+        float*       C_b = &C[b * M * N];
 
-        for (int i = 0; i < N; ++i) {
+        for (int i = 0; i < M; ++i) {
             for (int j = 0; j < N; ++j) {
+
                 float sum = 0.0f;
-                for (int k = 0; k < N; ++k)
-                    sum += batchA[i * N + k] * batchB[k * N + j];
-                batchC[i * N + j] = sum;
+                for (int t = 0; t < K; ++t)
+                    sum += A_b[i * K + t] * B_b[t * N + j];
+
+                C_b[i * N + j] = sum;
             }
         }
     }
 }
 
 /**
- * @brief Test small batch matrix multiplication for correctness.
+ * @brief Small test: non-square and multi-batch.
  */
 TEST(BatchedMatrixMulKernel, SmallBatch) {
 
-    // TODO: figure out why this takes more time than ModerateBatch
-    int N = 8;
+    int M = 8;
+    int K = 5;
+    int N = 6;
     int batch = 4;
-    std::vector<float> A(batch * N * N);
-    std::vector<float> B(batch * N * N);
-    std::vector<float> C(batch * N * N);
-    std::vector<float> C_ref(batch * N * N);
 
-    // Initialize matrices with simple values
-    for (int i = 0; i < batch * N * N; ++i) {
-        A[i] = static_cast<float>(i % 13);
-        B[i] = static_cast<float>((i * 3) % 7);
-    }
+    std::vector<float> A(batch * M * K);
+    std::vector<float> B(batch * K * N);
+    std::vector<float> C(batch * M * N);
+    std::vector<float> C_ref(batch * M * N);
 
-    batchedMatrixMul(A.data(), B.data(), C.data(), N, batch);
-    cpuBatchedMatMul(A, B, C_ref, N, batch);
+    // Initialize input matrices
+    for (int i = 0; i < batch * M * K; ++i)
+        A[i] = static_cast<float>((i * 7) % 11);
 
-    for (int i = 0; i < batch * N * N; ++i) {
+    for (int i = 0; i < batch * K * N; ++i)
+        B[i] = static_cast<float>((i * 3) % 13);
+
+    // Run CUDA kernel
+    batchedMatrixMul(A.data(), B.data(), C.data(), M, K, N, batch);
+
+    // Run reference CPU implementation
+    cpuBatchedMatMul(A, B, C_ref, M, K, N, batch);
+
+    // Compare all results
+    for (int i = 0; i < batch * M * N; ++i) {
         EXPECT_NEAR(C[i], C_ref[i], 1e-4f) << "Mismatch at index " << i;
     }
 }
 
 /**
- * @brief Test moderately large batch for stability and performance.
+ * @brief Moderate batch test, more realistic transformer-like sizes.
  */
 TEST(BatchedMatrixMulKernel, ModerateBatch) {
-    int N = 32;
-    int batch = 16;
-    std::vector<float> A(batch * N * N);
-    std::vector<float> B(batch * N * N);
-    std::vector<float> C(batch * N * N);
-    std::vector<float> C_ref(batch * N * N);
 
-    // Fill with small random values to avoid overflow
-    for (int i = 0; i < batch * N * N; ++i) {
+    int M = 32;   // sequence length or output dimension
+    int K = 16;   // head dimension
+    int N = 24;   // model dimension or next projection
+    int batch = 8;
+
+    std::vector<float> A(batch * M * K);
+    std::vector<float> B(batch * K * N);
+    std::vector<float> C(batch * M * N);
+    std::vector<float> C_ref(batch * M * N);
+
+    // Fill with small random-ish values
+    for (int i = 0; i < batch * M * K; ++i)
         A[i] = 0.1f * (i % 10);
-        B[i] = 0.1f * ((i + 3) % 10);
-    }
 
-    batchedMatrixMul(A.data(), B.data(), C.data(), N, batch);
-    cpuBatchedMatMul(A, B, C_ref, N, batch);
+    for (int i = 0; i < batch * K * N; ++i)
+        B[i] = 0.1f * ((i + 7) % 10);
 
-    for (int i = 0; i < batch * N * N; ++i) {
+    batchedMatrixMul(A.data(), B.data(), C.data(), M, K, N, batch);
+    cpuBatchedMatMul(A, B, C_ref, M, K, N, batch);
+
+    for (int i = 0; i < batch * M * N; ++i) {
         float expected = C_ref[i];
         float tol = 1e-3f * std::max(1.0f, (float)fabs(expected));
         EXPECT_NEAR(C[i], expected, tol) << "Mismatch at index " << i;
