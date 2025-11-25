@@ -39,7 +39,7 @@ __global__ void generateMeshKernel(
 
     // vertex position: x, y (height), z
     float vx = x * scale;
-    float vy = h;
+    float vy = h * scale * 30.0f;
     float vz = y * scale;
     vertices[idx] = make_float3(vx, vy, vz);
 
