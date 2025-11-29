@@ -3,7 +3,7 @@
 #include <vector>
 #include <cmath>
 #include <algorithm>
-#include "fused/fused.cuh"  // must declare generateMeshFromHeightmap()
+#include "fused/fused.cuh"
 
 /**
  * @brief CPU reference generator for vertices, normals, and texcoords.
