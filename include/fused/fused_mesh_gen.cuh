@@ -1,11 +1,13 @@
 #pragma once
 #include <cuda_runtime.h>
 
-extern "C" CUDA_KERNELS_API void generateMeshToVBOs(
-    const float* heightmap,
+extern "C" CUDA_KERNELS_API void generateMeshFromHeightmap(
+    const float* d_heightmap,
+    float3* d_vertices,
+    float3* d_normals,
+    float2* d_texcoords,
     int width,
     int height,
-    float scale,
-    cudaGraphicsResource_t vboVerticesRes,
-    cudaGraphicsResource_t vboNormalsRes,
-    cudaGraphicsResource_t vboTexcoordRes);
+    float scaleX,
+    float scaleY,
+    float heightScale);
