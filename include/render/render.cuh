@@ -10,7 +10,6 @@
 #pragma once
 
 #include "erosion.cuh"
-#include "gauss_blur.cuh"
 #include "gen_hmap.cuh"
 #include "norm_hmap.cuh"
 #include "normals.cuh"
