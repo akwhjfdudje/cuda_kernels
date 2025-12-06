@@ -55,8 +55,8 @@ static void cpuGenerateMesh(
             float hD = getH(x, ym);
             float hU = getH(x, yp);
 
-            float dx = (hR - hL) * 0.5f / ((scaleX != 0.0f) ? scaleX : 1.0f);
-            float dz = (hU - hD) * 0.5f / ((scaleY != 0.0f) ? scaleY : 1.0f);
+            float dx = (hR - hL) * 0.5f * heightScale / ((scaleX != 0.0f) ? scaleX : 1.0f);
+            float dz = (hU - hD) * 0.5f * heightScale / ((scaleY != 0.0f) ? scaleY : 1.0f);
 
             float3 n;
             n.x = -dx;

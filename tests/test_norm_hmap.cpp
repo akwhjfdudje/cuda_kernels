@@ -27,7 +27,6 @@ TEST(NormalizeHeightmapKernel, SmallGrid) {
     cudaMemcpy(d_hmap, heightmap.data(), width * height * sizeof(float), cudaMemcpyHostToDevice);
 
     // Compute actual min/max
-    // TODO: why does this work lmao
     float min_val, max_val;
     computeMinMax(heightmap, min_val, max_val);
 
