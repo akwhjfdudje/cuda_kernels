@@ -15,9 +15,12 @@
  * Each thread handles one heightmap cell and updates its height
  * based on water flow and sediment transport with neighbors.
  *
- * @param heightmap Heightmap buffer (width*height floats)
- * @param watermap Water depth per cell (same size as heightmap)
- * @param sedimentmap Sediment carried by water (same size)
+ * @param height_in Input heightmap buffer (width*height floats)
+ * @param water_in Input water depth per cell (same size as heightmap)
+ * @param sed_in Input sediment carried by water (same size)
+ * @param height_out Output heightmap buffer (width*height floats)
+ * @param water_out Output water buffer
+ * @param sed_out Output sediment buffer
  * @param width Width of heightmap
  * @param height Height of heightmap
  * @param timeStep Simulation step size
