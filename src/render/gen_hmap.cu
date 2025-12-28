@@ -24,6 +24,16 @@ __device__ inline float lerp(float a, float b, float t) {
 }
 
 __device__ float perlin(float x, float y, int seed) {
+    //
+    // This function generates smooth, continuous noise based on grid points.
+    // The algorithm calculates the corner values of a grid cell, hashes them, and then interpolates
+    // between those values using smooth curves to produce continuous, natural-looking randomness.
+    // 
+    // x: The x-coordinate for noise sampling.
+    // y: The y-coordinate for noise sampling.
+    // seed: The seed for random number generation, ensuring different results per seed.
+    // returns the Perlin noise value for the coordinates (x, y).
+    //
     int x0 = floorf(x);
     int y0 = floorf(y);
     int x1 = x0 + 1;
@@ -43,6 +53,19 @@ __device__ float perlin(float x, float y, int seed) {
 }
 
 __device__ float voronoi(float x, float y, int cell_count, int seed) {
+    //
+    // This function calculates the distance from a given point (x, y) to the 
+    // nearest point in a 2D grid of randomly distributed points (cells). It creates a 
+    // "cellular" pattern where each point is assigned to the nearest "site" or cell center. 
+    // The algorithm computes this by checking the distance to neighboring cells 
+    // and selecting the smallest distance.
+    // 
+    // x: The x-coordinate to sample.
+    // y: The y-coordinate to sample.
+    // cell_count: The number of cells per dimension to sample from.
+    // seed: The seed for random number generation, ensuring different results per seed.
+    // returns the distance to the nearest Voronoi site.
+    //
     int xi = floorf(x);
     int yi = floorf(y);
 
