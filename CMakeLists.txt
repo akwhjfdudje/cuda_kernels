@@ -19,6 +19,7 @@ set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -G -g")
 
 # === Globbing source files ===
 file(GLOB src_activate src/activate/*.cu)
+file(GLOB src_alg src/alg/*.cu)
 file(GLOB src_reduce src/reduce/*.cu)
 file(GLOB src_linalg src/linalg/*.cu)
 file(GLOB src_conv src/conv/*.cu)
@@ -30,6 +31,7 @@ file(GLOB src_render src/render/*.cu)
 
 set(source
     ${src_activate}
+    ${src_alg}
     ${src_reduce}
     ${src_linalg}
     ${src_conv}
