@@ -1,103 +1,103 @@
 /**
  * @file alg/mcts.cu
- * @brief Generic parallel Monte Carlo Tree Search (MCTS) rollouts kernel.
+ * @brief Generic parallel Monte Carlo Tree Search (MCTS) rollouts, purely random.
+ *
  */
 
 #include <cuda_runtime.h>
+#include <cstdio>
 #include "alg/alg.cuh"
 
-// Number of threads per block in each dimension (adjust as needed)
-#define TILE_DIM 16  
+#define MAX_ROLLOUTS 256
 
-/**
- * @brief Simulates a random rollout for MCTS (placeholder for actual game logic).
- *
- * @return Random reward between -1 and 1
- */
-__device__ float simulate_rollout() {
-    // Simple random reward between -1 and 1 for demonstration purposes
-    return (float)rand() / RAND_MAX * 2.0f - 1.0f;
+__device__ float lcg_random(unsigned int& state) {
+    //
+    // Linear Congruential Generator (LCG)
+    //
+    // This implements a fast, deterministic, device-safe RNG
+    // using the LCG algorithm. It works entirely on the GPU
+    // without any global state, making it suitable here.
+    //
+    // Algorithm:
+    //   state = (a*state + c) mod m
+    //   - 'state' is the current RNG state (seed), passed by reference.
+    //   - 'a' is the multiplier constant (1664525u), chosen for good statistical properties.
+    //   - 'c' is the increment constant (1013904223u), also chosen for LCG quality.
+    //   - 'm' is implicitly 2^32 due to 32-bit unsigned integer overflow.
+    //
+    // The resulting 'state' is then converted to a floating-point number in [0,1):
+    //   - Mask the lower 24 bits with 0x00FFFFFF to avoid using all 32 bits.
+    //   - Divide by 2^24 (0x01000000) to normalize to the range [0,1).
+    //
+
+    // Update RNG state using LCG formula
+    state = state * 1664525u + 1013904223u;
+
+    // Convert to [0,1) using lower 24 bits
+    return (state & 0x00FFFFFF) / float(0x01000000);
 }
 
-/**
- * @brief Parallel MCTS rollouts kernel to update nodes based on random simulations.
- *
- * input: A list of MCTS nodes, each with value and visit count.
- * rollouts_per_node: The number of rollouts to perform per node in parallel.
- *
- * @param nodes Pointer to MCTS nodes array
- * @param num_nodes Total number of nodes in the MCTS tree
- * @param rollouts_per_node Number of rollouts per node to be simulated
- */
 __global__ void MCTSRolloutsKernel(
-    MCTSNode *nodes,        // MCTS nodes array
-    int num_nodes,          // Total number of nodes
-    int rollouts_per_node   // Number of rollouts per node
+    MCTSNode* nodes,
+    int rollouts_per_node
 ) {
-    __shared__ float tile_value[TILE_DIM];  // Shared memory for holding partial values
-    __shared__ int tile_visit_count[TILE_DIM];  // Shared memory for holding partial visit counts
+    int node_idx = blockIdx.x;
+    int tid = threadIdx.x;
 
-    int idx = blockIdx.x * TILE_DIM + threadIdx.x;
+    if (tid >= rollouts_per_node) return;
 
-    // Ensure thread index is within bounds
-    if (idx >= num_nodes) return;
+    __shared__ float rewards[MAX_ROLLOUTS];
 
-    // Access the node for this thread
-    MCTSNode *node = &nodes[idx];
+    // Per-thread RNG seed
+    unsigned int rng = (unsigned int)(node_idx * 9781u + tid * 6271u);
 
-    // Perform rollouts for this node
-    float total_reward = 0.0f;
-    int total_visits = 0;
-    for (int i = 0; i < rollouts_per_node; i++) {
-        total_reward += simulate_rollout();
-        total_visits++;
+    // Simulate rollout
+    float reward = 2.0f * lcg_random(rng) - 1.0f;
+    rewards[tid] = reward;
+
+    __syncthreads();
+
+    // Parallel reduction
+    for (int stride = blockDim.x / 2; stride > 0; stride >>= 1) {
+        if (tid < stride) {
+            rewards[tid] += rewards[tid + stride];
+        }
+        __syncthreads();
     }
 
-    // Store the partial results in shared memory
-    tile_value[threadIdx.x] = total_reward;
-    tile_visit_count[threadIdx.x] = total_visits;
-
-    __syncthreads();  // Synchronize threads within block
-
-    // Aggregate results from all threads in the block (if necessary)
-    if (threadIdx.x == 0) {
-        float block_total_reward = 0.0f;
-        int block_total_visits = 0;
-        for (int i = 0; i < TILE_DIM; i++) {
-            block_total_reward += tile_value[i];
-            block_total_visits += tile_visit_count[i];
-        }
-
-        // Update node value and visit count using atomic operations
-        atomicAdd(&node->value, block_total_reward);
-        atomicAdd(&node->visit_count, block_total_visits);
+    // Accumulate into node
+    if (tid == 0) {
+        atomicAdd(&nodes[node_idx].value, rewards[0]);
+        atomicAdd(&nodes[node_idx].visit_count, rollouts_per_node);
     }
 }
 
-/**
- * @brief Host launcher for parallel MCTS rollouts.
- *
- * @param nodes Array of MCTS nodes
- * @param num_nodes Total number of nodes in the tree
- * @param rollouts_per_node Number of rollouts per node
- */
 extern "C" CUDA_KERNELS_API
 void MCTSRollouts(
-    MCTSNode *nodes,          // Array of MCTS nodes (on host)
-    int num_nodes,            // Total number of nodes
-    int rollouts_per_node     // Number of rollouts per node
+    MCTSNode* nodes,      // host nodes
+    int num_nodes,
+    int rollouts_per_node
 ) {
-    MCTSNode *d_nodes = nullptr;
-    size_t nodes_size = (size_t)num_nodes * sizeof(MCTSNode);
+    if (rollouts_per_node > MAX_ROLLOUTS) {
+        printf("rollouts_per_node exceeds MAX_ROLLOUTS\n");
+        return;
+    }
 
-    cudaMalloc(&d_nodes, nodes_size);
-    cudaMemcpy(d_nodes, nodes, nodes_size, cudaMemcpyHostToDevice);
+    MCTSNode* d_nodes = nullptr;
+    size_t size = (size_t)num_nodes * sizeof(MCTSNode);
 
-    int block_size = TILE_DIM;  // Threads per block in each dimension
-    int grid_size = (num_nodes + TILE_DIM - 1) / TILE_DIM;  // Number of blocks
+    cudaMalloc(&d_nodes, size);
+    cudaMemcpy(d_nodes, nodes, size, cudaMemcpyHostToDevice);
 
-    MCTSRolloutsKernel<<<grid_size, block_size>>>(d_nodes, num_nodes, rollouts_per_node);
+    // Round threads to next power of two
+    int threads = 1;
+    while (threads < rollouts_per_node) threads <<= 1;
 
-    cudaMemcpy(nodes, d_nodes, nodes_size, cudaMemcpyDeviceToHost);
+    MCTSRolloutsKernel<<<num_nodes, threads>>>(d_nodes, rollouts_per_node);
+
+    cudaDeviceSynchronize();
+
+    cudaMemcpy(nodes, d_nodes, size, cudaMemcpyDeviceToHost);
     cudaFree(d_nodes);
 }
+

@@ -5,4 +5,9 @@ struct MCTSNode {
     int visit_count;    // Number of rollouts (visits)
 };
 
-extern "C" CUDA_KERNELS_API void MCTSRollouts(MCTSNode *nodes, int num_nodes, int rollouts_per_node);
+extern "C" CUDA_KERNELS_API
+void MCTSRollouts(
+    MCTSNode* nodes,      // host nodes
+    int num_nodes,
+    int rollouts_per_node
+);

@@ -1,5 +1,5 @@
 /**
- * @file image/generic_conv.cu
+ * @file conv/generic_conv.cu
  * @brief Generic 2D convolution kernel for single-channel images.
  */
 
