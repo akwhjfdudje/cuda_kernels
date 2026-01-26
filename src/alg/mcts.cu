@@ -7,35 +7,9 @@
 #include <cuda_runtime.h>
 #include <cstdio>
 #include "alg/alg.cuh"
+#include "utils/utils.cuh"
 
 #define MAX_ROLLOUTS 256
-
-__device__ float lcg_random(unsigned int& state) {
-    //
-    // Linear Congruential Generator (LCG)
-    //
-    // This implements a fast, deterministic, device-safe RNG
-    // using the LCG algorithm. It works entirely on the GPU
-    // without any global state, making it suitable here.
-    //
-    // Algorithm:
-    //   state = (a*state + c) mod m
-    //   - 'state' is the current RNG state (seed), passed by reference.
-    //   - 'a' is the multiplier constant (1664525u), chosen for good statistical properties.
-    //   - 'c' is the increment constant (1013904223u), also chosen for LCG quality.
-    //   - 'm' is implicitly 2^32 due to 32-bit unsigned integer overflow.
-    //
-    // The resulting 'state' is then converted to a floating-point number in [0,1):
-    //   - Mask the lower 24 bits with 0x00FFFFFF to avoid using all 32 bits.
-    //   - Divide by 2^24 (0x01000000) to normalize to the range [0,1).
-    //
-
-    // Update RNG state using LCG formula
-    state = state * 1664525u + 1013904223u;
-
-    // Convert to [0,1) using lower 24 bits
-    return (state & 0x00FFFFFF) / float(0x01000000);
-}
 
 __global__ void MCTSRolloutsKernel(
     MCTSNode* nodes,

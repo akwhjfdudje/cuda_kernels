@@ -28,6 +28,7 @@ file(GLOB src_fused src/fused/*.cu)
 file(GLOB src_image src/image/*.cu)
 file(GLOB src_utils src/utils/*.cu)
 file(GLOB src_render src/render/*.cu)
+file(GLOB src_noise src/noise/*.cu)
 
 set(source
     ${src_activate}
@@ -40,6 +41,7 @@ set(source
     ${src_image}
     ${src_utils}
     ${src_render}
+    ${src_noise}
 )
 
 file(GLOB test tests/*)
