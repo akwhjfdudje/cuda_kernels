@@ -119,3 +119,113 @@ TEST(GenerateHeightmap, LargeGrid) {
         EXPECT_NEAR(gpuOut[i], cpuOut[i], tol) << "Mismatch at index " << i;
     }
 }
+
+TEST(GenerateHeightmap, SinglePixel) {
+    int width = 1, height = 1;
+    float scale = 1.0f;
+    int seed = 42;
+    float mix_ratio = 0.5f;
+    
+    std::vector<float> cpuOut(width * height);
+    std::vector<float> gpuOut(width * height);
+    
+    cpuGenerateHeightmap(cpuOut, width, height, scale, seed, mix_ratio);
+    generateHeightmap(gpuOut.data(), width, height, scale, seed, mix_ratio);
+    
+    EXPECT_NEAR(gpuOut[0], cpuOut[0], 1e-4f);
+}
+
+TEST(GenerateHeightmap, PurePerlin) {
+    int width = 16, height = 16;
+    float scale = 4.0f;
+    int seed = 123;
+    float mix_ratio = 0.0f; // Pure Perlin
+    
+    std::vector<float> cpuOut(width * height);
+    std::vector<float> gpuOut(width * height);
+    
+    cpuGenerateHeightmap(cpuOut, width, height, scale, seed, mix_ratio);
+    generateHeightmap(gpuOut.data(), width, height, scale, seed, mix_ratio);
+    
+    for (int i = 0; i < width * height; ++i) {
+        EXPECT_NEAR(gpuOut[i], cpuOut[i], 1e-4f);
+    }
+}
+
+TEST(GenerateHeightmap, PureVoronoi) {
+    int width = 16, height = 16;
+    float scale = 4.0f;
+    int seed = 456;
+    float mix_ratio = 1.0f; // Pure Voronoi
+    
+    std::vector<float> cpuOut(width * height);
+    std::vector<float> gpuOut(width * height);
+    
+    cpuGenerateHeightmap(cpuOut, width, height, scale, seed, mix_ratio);
+    generateHeightmap(gpuOut.data(), width, height, scale, seed, mix_ratio);
+    
+    for (int i = 0; i < width * height; ++i) {
+        EXPECT_NEAR(gpuOut[i], cpuOut[i], 1e-4f);
+    }
+}
+
+TEST(GenerateHeightmap, DifferentSeeds) {
+    int width = 8, height = 8;
+    float scale = 4.0f;
+    float mix_ratio = 0.5f;
+    
+    std::vector<float> out1(width * height);
+    std::vector<float> out2(width * height);
+    
+    generateHeightmap(out1.data(), width, height, scale, 100, mix_ratio);
+    generateHeightmap(out2.data(), width, height, scale, 200, mix_ratio);
+    
+    // Different seeds should produce different results
+    bool all_same = true;
+    for (int i = 0; i < width * height; ++i) {
+        if (std::abs(out1[i] - out2[i]) > 1e-5f) {
+            all_same = false;
+            break;
+        }
+    }
+    EXPECT_FALSE(all_same);
+}
+
+TEST(GenerateHeightmap, RangeCheck) {
+    int width = 32, height = 32;
+    float scale = 8.0f;
+    int seed = 789;
+    float mix_ratio = 0.5f;
+    
+    std::vector<float> gpuOut(width * height);
+    generateHeightmap(gpuOut.data(), width, height, scale, seed, mix_ratio);
+    
+    // Values should be in range [-1, 1]
+    for (int i = 0; i < width * height; ++i) {
+        EXPECT_GE(gpuOut[i], -1.0f);
+        EXPECT_LE(gpuOut[i], 1.0f);
+        EXPECT_TRUE(std::isfinite(gpuOut[i]));
+    }
+}
+
+TEST(GenerateHeightmap, DifferentScales) {
+    int width = 16, height = 16;
+    int seed = 42;
+    float mix_ratio = 0.5f;
+    
+    std::vector<float> out1(width * height);
+    std::vector<float> out2(width * height);
+    
+    generateHeightmap(out1.data(), width, height, 2.0f, seed, mix_ratio);
+    generateHeightmap(out2.data(), width, height, 8.0f, seed, mix_ratio);
+    
+    // Different scales should produce different results
+    bool all_same = true;
+    for (int i = 0; i < width * height; ++i) {
+        if (std::abs(out1[i] - out2[i]) > 1e-5f) {
+            all_same = false;
+            break;
+        }
+    }
+    EXPECT_FALSE(all_same);
+}

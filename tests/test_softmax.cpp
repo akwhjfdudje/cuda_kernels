@@ -72,3 +72,130 @@ TEST(SoftmaxKernel, BasicCorrectness) {
         EXPECT_NEAR(sum, 1.0f, 1e-3f);
     }
 }
+
+TEST(SoftmaxKernel, SingleRow) {
+    const int rows = 1;
+    const int cols = 5;
+    std::vector<float> input(rows * cols), output(rows * cols), ref(rows * cols);
+    
+    for (int i = 0; i < cols; ++i) {
+        input[i] = static_cast<float>(i);
+    }
+    
+    softmax_CPU(input.data(), ref.data(), rows, cols);
+    softmax(input.data(), output.data(), rows, cols);
+    
+    float sum = 0.0f;
+    for (int j = 0; j < cols; ++j) {
+        sum += output[j];
+        EXPECT_GE(output[j], 0.0f);
+        EXPECT_NEAR(output[j], ref[j], 1e-4f);
+    }
+    EXPECT_NEAR(sum, 1.0f, 1e-3f);
+}
+
+TEST(SoftmaxKernel, SingleColumn) {
+    const int rows = 10;
+    const int cols = 1;
+    std::vector<float> input(rows * cols), output(rows * cols);
+    
+    for (int i = 0; i < rows; ++i) {
+        input[i] = static_cast<float>(i);
+    }
+    
+    softmax(input.data(), output.data(), rows, cols);
+    
+    for (int i = 0; i < rows; ++i) {
+        EXPECT_NEAR(output[i], 1.0f, 1e-5f);
+    }
+}
+
+TEST(SoftmaxKernel, LargeValues) {
+    const int rows = 3;
+    const int cols = 4;
+    std::vector<float> input(rows * cols), output(rows * cols), ref(rows * cols);
+    
+    for (int i = 0; i < rows * cols; ++i) {
+        input[i] = 100.0f + static_cast<float>(i);
+    }
+    
+    softmax_CPU(input.data(), ref.data(), rows, cols);
+    softmax(input.data(), output.data(), rows, cols);
+    
+    for (int i = 0; i < rows; ++i) {
+        float sum = 0.0f;
+        for (int j = 0; j < cols; ++j) {
+            int idx = i * cols + j;
+            sum += output[idx];
+            EXPECT_GE(output[idx], 0.0f);
+            EXPECT_NEAR(output[idx], ref[idx], 1e-3f);
+        }
+        EXPECT_NEAR(sum, 1.0f, 1e-3f);
+    }
+}
+
+TEST(SoftmaxKernel, NegativeValues) {
+    const int rows = 2;
+    const int cols = 5;
+    std::vector<float> input(rows * cols), output(rows * cols), ref(rows * cols);
+    
+    for (int i = 0; i < rows * cols; ++i) {
+        input[i] = -static_cast<float>(i);
+    }
+    
+    softmax_CPU(input.data(), ref.data(), rows, cols);
+    softmax(input.data(), output.data(), rows, cols);
+    
+    for (int i = 0; i < rows; ++i) {
+        float sum = 0.0f;
+        for (int j = 0; j < cols; ++j) {
+            int idx = i * cols + j;
+            sum += output[idx];
+            EXPECT_GE(output[idx], 0.0f);
+            EXPECT_NEAR(output[idx], ref[idx], 1e-4f);
+        }
+        EXPECT_NEAR(sum, 1.0f, 1e-3f);
+    }
+}
+
+TEST(SoftmaxKernel, AllZeros) {
+    const int rows = 3;
+    const int cols = 4;
+    std::vector<float> input(rows * cols, 0.0f), output(rows * cols);
+    
+    softmax(input.data(), output.data(), rows, cols);
+    
+    float expected = 1.0f / static_cast<float>(cols);
+    for (int i = 0; i < rows; ++i) {
+        float sum = 0.0f;
+        for (int j = 0; j < cols; ++j) {
+            int idx = i * cols + j;
+            sum += output[idx];
+            EXPECT_NEAR(output[idx], expected, 1e-4f);
+        }
+        EXPECT_NEAR(sum, 1.0f, 1e-3f);
+    }
+}
+
+TEST(SoftmaxKernel, LargeMatrix) {
+    const int rows = 100;
+    const int cols = 50;
+    std::vector<float> input(rows * cols), output(rows * cols);
+    
+    for (int i = 0; i < rows * cols; ++i) {
+        input[i] = static_cast<float>(i % 100 - 50);
+    }
+    
+    softmax(input.data(), output.data(), rows, cols);
+    
+    for (int i = 0; i < rows; ++i) {
+        float sum = 0.0f;
+        for (int j = 0; j < cols; ++j) {
+            int idx = i * cols + j;
+            sum += output[idx];
+            EXPECT_GE(output[idx], 0.0f);
+            EXPECT_TRUE(std::isfinite(output[idx]));
+        }
+        EXPECT_NEAR(sum, 1.0f, 1e-3f);
+    }
+}

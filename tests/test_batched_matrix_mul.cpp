@@ -98,3 +98,100 @@ TEST(BatchedMatrixMulKernel, ModerateBatch) {
         EXPECT_NEAR(C[i], expected, tol) << "Mismatch at index " << i;
     }
 }
+
+TEST(BatchedMatrixMulKernel, SingleBatch) {
+    int M = 4, K = 3, N = 5, batch = 1;
+    std::vector<float> A(batch * M * K), B(batch * K * N), C(batch * M * N), C_ref(batch * M * N);
+    
+    for (int i = 0; i < batch * M * K; ++i) {
+        A[i] = static_cast<float>(i);
+    }
+    for (int i = 0; i < batch * K * N; ++i) {
+        B[i] = static_cast<float>(i);
+    }
+    
+    batchedMatrixMul(A.data(), B.data(), C.data(), M, K, N, batch);
+    cpuBatchedMatMul(A, B, C_ref, M, K, N, batch);
+    
+    for (int i = 0; i < batch * M * N; ++i) {
+        EXPECT_NEAR(C[i], C_ref[i], 1e-4f);
+    }
+}
+
+TEST(BatchedMatrixMulKernel, IdentityMatrices) {
+    int M = 4, K = 4, N = 4, batch = 3;
+    std::vector<float> A(batch * M * K), B(batch * K * N), C(batch * M * N), C_ref(batch * M * N);
+    
+    // Create identity matrices for A
+    for (int b = 0; b < batch; ++b) {
+        for (int i = 0; i < M; ++i) {
+            for (int j = 0; j < K; ++j) {
+                A[b * M * K + i * K + j] = (i == j) ? 1.0f : 0.0f;
+            }
+        }
+    }
+    
+    // Fill B with values
+    for (int i = 0; i < batch * K * N; ++i) {
+        B[i] = static_cast<float>(i);
+    }
+    
+    batchedMatrixMul(A.data(), B.data(), C.data(), M, K, N, batch);
+    
+    // A * B should equal B when A is identity
+    for (int i = 0; i < batch * K * N; ++i) {
+        EXPECT_NEAR(C[i], B[i], 1e-5f);
+    }
+}
+
+TEST(BatchedMatrixMulKernel, ZeroMatrices) {
+    int M = 4, K = 3, N = 5, batch = 2;
+    std::vector<float> A(batch * M * K, 0.0f), B(batch * K * N), C(batch * M * N);
+    
+    for (int i = 0; i < batch * K * N; ++i) {
+        B[i] = static_cast<float>(i);
+    }
+    
+    batchedMatrixMul(A.data(), B.data(), C.data(), M, K, N, batch);
+    
+    for (int i = 0; i < batch * M * N; ++i) {
+        EXPECT_NEAR(C[i], 0.0f, 1e-5f);
+    }
+}
+
+TEST(BatchedMatrixMulKernel, NegativeValues) {
+    int M = 3, K = 2, N = 3, batch = 2;
+    std::vector<float> A(batch * M * K), B(batch * K * N), C(batch * M * N), C_ref(batch * M * N);
+    
+    for (int i = 0; i < batch * M * K; ++i) {
+        A[i] = -static_cast<float>(i);
+    }
+    for (int i = 0; i < batch * K * N; ++i) {
+        B[i] = static_cast<float>(i);
+    }
+    
+    batchedMatrixMul(A.data(), B.data(), C.data(), M, K, N, batch);
+    cpuBatchedMatMul(A, B, C_ref, M, K, N, batch);
+    
+    for (int i = 0; i < batch * M * N; ++i) {
+        EXPECT_NEAR(C[i], C_ref[i], 1e-4f);
+    }
+}
+
+TEST(BatchedMatrixMulKernel, LargeBatch) {
+    int M = 8, K = 4, N = 8, batch = 32;
+    std::vector<float> A(batch * M * K), B(batch * K * N), C(batch * M * N);
+    
+    for (int i = 0; i < batch * M * K; ++i) {
+        A[i] = 0.1f * static_cast<float>(i % 10);
+    }
+    for (int i = 0; i < batch * K * N; ++i) {
+        B[i] = 0.1f * static_cast<float>((i + 7) % 10);
+    }
+    
+    batchedMatrixMul(A.data(), B.data(), C.data(), M, K, N, batch);
+    
+    for (int i = 0; i < batch * M * N; ++i) {
+        EXPECT_TRUE(std::isfinite(C[i]));
+    }
+}

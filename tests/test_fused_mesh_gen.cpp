@@ -206,3 +206,176 @@ TEST(FusedMeshKernel, ModerateGrid) {
     cudaFree(d_uv);
 }
 
+TEST(FusedMeshKernel, SinglePixel) {
+    int W = 1, H = 1;
+    int N = W * H;
+    
+    float scaleX = 1.0f, scaleY = 1.0f, heightScale = 1.0f;
+    std::vector<float> hm = {5.0f};
+    
+    float *d_hm;
+    float3 *d_v, *d_n;
+    float2 *d_uv;
+    
+    cudaMalloc(&d_hm, N * sizeof(float));
+    cudaMalloc(&d_v,  N * sizeof(float3));
+    cudaMalloc(&d_n,  N * sizeof(float3));
+    cudaMalloc(&d_uv, N * sizeof(float2));
+    cudaMemcpy(d_hm, hm.data(), N*sizeof(float), cudaMemcpyHostToDevice);
+    
+    generateMeshFromHeightmap(d_hm, d_v, d_n, d_uv, W, H, scaleX, scaleY, heightScale);
+    
+    std::vector<float3> v(N), n(N);
+    std::vector<float2> uv(N);
+    cudaMemcpy(v.data(),  d_v,  N*sizeof(float3), cudaMemcpyDeviceToHost);
+    cudaMemcpy(n.data(),  d_n,  N*sizeof(float3), cudaMemcpyDeviceToHost);
+    cudaMemcpy(uv.data(), d_uv, N*sizeof(float2), cudaMemcpyDeviceToHost);
+    
+    std::vector<float3> refV, refN;
+    std::vector<float2> refUV;
+    cpuGenerateMesh(hm, W, H, scaleX, scaleY, heightScale, refV, refN, refUV);
+    
+    EXPECT_NEAR(v[0].x, refV[0].x, 1e-5f);
+    EXPECT_NEAR(v[0].y, refV[0].y, 1e-5f);
+    EXPECT_NEAR(v[0].z, refV[0].z, 1e-5f);
+    
+    cudaFree(d_hm);
+    cudaFree(d_v);
+    cudaFree(d_n);
+    cudaFree(d_uv);
+}
+
+TEST(FusedMeshKernel, FlatHeightmap) {
+    int W = 8, H = 8;
+    int N = W * H;
+    
+    float scaleX = 0.1f, scaleY = 0.1f, heightScale = 1.0f;
+    std::vector<float> hm(N, 10.0f);
+    
+    float *d_hm;
+    float3 *d_v, *d_n;
+    float2 *d_uv;
+    
+    cudaMalloc(&d_hm, N * sizeof(float));
+    cudaMalloc(&d_v,  N * sizeof(float3));
+    cudaMalloc(&d_n,  N * sizeof(float3));
+    cudaMalloc(&d_uv, N * sizeof(float2));
+    cudaMemcpy(d_hm, hm.data(), N*sizeof(float), cudaMemcpyHostToDevice);
+    
+    generateMeshFromHeightmap(d_hm, d_v, d_n, d_uv, W, H, scaleX, scaleY, heightScale);
+    
+    std::vector<float3> v(N), n(N);
+    std::vector<float2> uv(N);
+    cudaMemcpy(v.data(),  d_v,  N*sizeof(float3), cudaMemcpyDeviceToHost);
+    cudaMemcpy(n.data(),  d_n,  N*sizeof(float3), cudaMemcpyDeviceToHost);
+    cudaMemcpy(uv.data(), d_uv, N*sizeof(float2), cudaMemcpyDeviceToHost);
+    
+    std::vector<float3> refV, refN;
+    std::vector<float2> refUV;
+    cpuGenerateMesh(hm, W, H, scaleX, scaleY, heightScale, refV, refN, refUV);
+    
+    for (int i = 0; i < N; ++i) {
+        EXPECT_NEAR(v[i].x, refV[i].x, 1e-5f);
+        EXPECT_NEAR(v[i].y, refV[i].y, 1e-5f);
+        EXPECT_NEAR(v[i].z, refV[i].z, 1e-5f);
+        EXPECT_NEAR(uv[i].x, refUV[i].x, 1e-6f);
+        EXPECT_NEAR(uv[i].y, refUV[i].y, 1e-6f);
+    }
+    
+    cudaFree(d_hm);
+    cudaFree(d_v);
+    cudaFree(d_n);
+    cudaFree(d_uv);
+}
+
+TEST(FusedMeshKernel, RectangularGrid) {
+    int W = 16, H = 8;
+    int N = W * H;
+    
+    float scaleX = 0.1f, scaleY = 0.2f, heightScale = 5.0f;
+    std::vector<float> hm(N);
+    for (int i = 0; i < N; ++i) {
+        hm[i] = 0.1f * static_cast<float>(i % 20);
+    }
+    
+    float *d_hm;
+    float3 *d_v, *d_n;
+    float2 *d_uv;
+    
+    cudaMalloc(&d_hm, N * sizeof(float));
+    cudaMalloc(&d_v,  N * sizeof(float3));
+    cudaMalloc(&d_n,  N * sizeof(float3));
+    cudaMalloc(&d_uv, N * sizeof(float2));
+    cudaMemcpy(d_hm, hm.data(), N*sizeof(float), cudaMemcpyHostToDevice);
+    
+    generateMeshFromHeightmap(d_hm, d_v, d_n, d_uv, W, H, scaleX, scaleY, heightScale);
+    
+    std::vector<float3> v(N), n(N);
+    std::vector<float2> uv(N);
+    cudaMemcpy(v.data(),  d_v,  N*sizeof(float3), cudaMemcpyDeviceToHost);
+    cudaMemcpy(n.data(),  d_n,  N*sizeof(float3), cudaMemcpyDeviceToHost);
+    cudaMemcpy(uv.data(), d_uv, N*sizeof(float2), cudaMemcpyDeviceToHost);
+    
+    std::vector<float3> refV, refN;
+    std::vector<float2> refUV;
+    cpuGenerateMesh(hm, W, H, scaleX, scaleY, heightScale, refV, refN, refUV);
+    
+    for (int i = 0; i < N; ++i) {
+        EXPECT_NEAR(v[i].x, refV[i].x, 1e-4f);
+        EXPECT_NEAR(v[i].y, refV[i].y, 1e-4f);
+        EXPECT_NEAR(v[i].z, refV[i].z, 1e-4f);
+    }
+    
+    cudaFree(d_hm);
+    cudaFree(d_v);
+    cudaFree(d_n);
+    cudaFree(d_uv);
+}
+
+TEST(FusedMeshKernel, NegativeHeights) {
+    int W = 8, H = 8;
+    int N = W * H;
+    
+    float scaleX = 0.1f, scaleY = 0.1f, heightScale = 1.0f;
+    std::vector<float> hm(N);
+    for (int i = 0; i < N; ++i) {
+        hm[i] = -static_cast<float>(i % 10);
+    }
+    
+    float *d_hm;
+    float3 *d_v, *d_n;
+    float2 *d_uv;
+    
+    cudaMalloc(&d_hm, N * sizeof(float));
+    cudaMalloc(&d_v,  N * sizeof(float3));
+    cudaMalloc(&d_n,  N * sizeof(float3));
+    cudaMalloc(&d_uv, N * sizeof(float2));
+    cudaMemcpy(d_hm, hm.data(), N*sizeof(float), cudaMemcpyHostToDevice);
+    
+    generateMeshFromHeightmap(d_hm, d_v, d_n, d_uv, W, H, scaleX, scaleY, heightScale);
+    
+    std::vector<float3> v(N), n(N);
+    std::vector<float2> uv(N);
+    cudaMemcpy(v.data(),  d_v,  N*sizeof(float3), cudaMemcpyDeviceToHost);
+    cudaMemcpy(n.data(),  d_n,  N*sizeof(float3), cudaMemcpyDeviceToHost);
+    cudaMemcpy(uv.data(), d_uv, N*sizeof(float2), cudaMemcpyDeviceToHost);
+    
+    for (int i = 0; i < N; ++i) {
+        EXPECT_TRUE(std::isfinite(v[i].x));
+        EXPECT_TRUE(std::isfinite(v[i].y));
+        EXPECT_TRUE(std::isfinite(v[i].z));
+        EXPECT_TRUE(std::isfinite(n[i].x));
+        EXPECT_TRUE(std::isfinite(n[i].y));
+        EXPECT_TRUE(std::isfinite(n[i].z));
+        EXPECT_GE(uv[i].x, 0.0f);
+        EXPECT_LE(uv[i].x, 1.0f);
+        EXPECT_GE(uv[i].y, 0.0f);
+        EXPECT_LE(uv[i].y, 1.0f);
+    }
+    
+    cudaFree(d_hm);
+    cudaFree(d_v);
+    cudaFree(d_n);
+    cudaFree(d_uv);
+}
+

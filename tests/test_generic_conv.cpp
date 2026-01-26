@@ -102,3 +102,104 @@ TEST(Conv2DKernel, ModerateImage) {
     }
 }
 
+TEST(Conv2DKernel, SinglePixel) {
+    int W = 1, H = 1, ksize = 1;
+    std::vector<float> input = {5.0f}, kernel = {2.0f}, output(W * H), ref(W * H);
+    
+    conv2D(input.data(), output.data(), kernel.data(), W, H, ksize);
+    cpuConv2D(input, kernel, ref, W, H, ksize);
+    
+    EXPECT_NEAR(output[0], ref[0], 1e-5f);
+}
+
+TEST(Conv2DKernel, IdentityKernel) {
+    int W = 5, H = 5, ksize = 3;
+    std::vector<float> input(W * H), kernel(ksize * ksize, 0.0f), output(W * H), ref(W * H);
+    
+    kernel[ksize * ksize / 2] = 1.0f; // Center element is 1, rest are 0
+    
+    for (int i = 0; i < W * H; ++i) {
+        input[i] = static_cast<float>(i);
+    }
+    
+    conv2D(input.data(), output.data(), kernel.data(), W, H, ksize);
+    cpuConv2D(input, kernel, ref, W, H, ksize);
+    
+    for (int i = 0; i < W * H; ++i) {
+        EXPECT_NEAR(output[i], ref[i], 1e-4f);
+    }
+}
+
+TEST(Conv2DKernel, ZeroKernel) {
+    int W = 4, H = 4, ksize = 3;
+    std::vector<float> input(W * H), kernel(ksize * ksize, 0.0f), output(W * H);
+    
+    for (int i = 0; i < W * H; ++i) {
+        input[i] = static_cast<float>(i);
+    }
+    
+    conv2D(input.data(), output.data(), kernel.data(), W, H, ksize);
+    
+    for (int i = 0; i < W * H; ++i) {
+        EXPECT_NEAR(output[i], 0.0f, 1e-5f);
+    }
+}
+
+TEST(Conv2DKernel, NegativeValues) {
+    int W = 6, H = 6, ksize = 3;
+    std::vector<float> input(W * H), kernel(ksize * ksize), output(W * H), ref(W * H);
+    
+    for (int i = 0; i < W * H; ++i) {
+        input[i] = -static_cast<float>(i);
+    }
+    for (int i = 0; i < ksize * ksize; ++i) {
+        kernel[i] = -0.1f * static_cast<float>(i + 1);
+    }
+    
+    conv2D(input.data(), output.data(), kernel.data(), W, H, ksize);
+    cpuConv2D(input, kernel, ref, W, H, ksize);
+    
+    for (int i = 0; i < W * H; ++i) {
+        EXPECT_NEAR(output[i], ref[i], 1e-4f);
+    }
+}
+
+TEST(Conv2DKernel, LargeKernel) {
+    int W = 16, H = 16, ksize = 7;
+    std::vector<float> input(W * H), kernel(ksize * ksize), output(W * H), ref(W * H);
+    
+    for (int i = 0; i < W * H; ++i) {
+        input[i] = 0.1f * static_cast<float>(i % 20);
+    }
+    for (int i = 0; i < ksize * ksize; ++i) {
+        kernel[i] = 1.0f / (ksize * ksize);
+    }
+    
+    conv2D(input.data(), output.data(), kernel.data(), W, H, ksize);
+    cpuConv2D(input, kernel, ref, W, H, ksize);
+    
+    for (int i = 0; i < W * H; ++i) {
+        float tol = 1e-4f * std::max(1.0f, std::fabs(ref[i]));
+        EXPECT_NEAR(output[i], ref[i], tol);
+    }
+}
+
+TEST(Conv2DKernel, RectangularImage) {
+    int W = 10, H = 5, ksize = 3;
+    std::vector<float> input(W * H), kernel(ksize * ksize), output(W * H), ref(W * H);
+    
+    for (int i = 0; i < W * H; ++i) {
+        input[i] = static_cast<float>(i);
+    }
+    for (int i = 0; i < ksize * ksize; ++i) {
+        kernel[i] = 0.1f * static_cast<float>(i + 1);
+    }
+    
+    conv2D(input.data(), output.data(), kernel.data(), W, H, ksize);
+    cpuConv2D(input, kernel, ref, W, H, ksize);
+    
+    for (int i = 0; i < W * H; ++i) {
+        EXPECT_NEAR(output[i], ref[i], 1e-4f);
+    }
+}
+

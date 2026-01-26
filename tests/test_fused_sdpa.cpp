@@ -85,3 +85,98 @@ TEST(FusedScaledDotProductAttention, BasicCorrectness) {
     }
 }
 
+TEST(FusedScaledDotProductAttention, SingleBatch) {
+    const int B = 1, N = 4, Dk = 8, Dv = 8;
+    std::vector<float> Q(B*N*Dk), K(B*N*Dk), V(B*N*Dv);
+    std::vector<float> Out(B*N*Dv, 0.0f), Ref(B*N*Dv, 0.0f);
+    
+    for (int i = 0; i < B*N*Dk; ++i) {
+        Q[i] = 0.1f * static_cast<float>((i % Dk) - Dk/2);
+        K[i] = 0.1f * static_cast<float>((i % Dk) - Dk/2);
+    }
+    for (int i = 0; i < B*N*Dv; ++i) {
+        V[i] = 0.1f * static_cast<float>((i % Dv) - Dv/2);
+    }
+    
+    scaledDotProductAttentionCPU(Q.data(), K.data(), V.data(), Ref.data(), B, N, Dk, Dv);
+    fusedScaledDotProductAttention(Q.data(), K.data(), V.data(), Out.data(), B, N, Dk, Dv);
+    
+    for (int i = 0; i < B*N*Dv; ++i) {
+        EXPECT_NEAR(Out[i], Ref[i], 1e-3f);
+    }
+}
+
+TEST(FusedScaledDotProductAttention, SingleSequence) {
+    const int B = 2, N = 1, Dk = 4, Dv = 4;
+    std::vector<float> Q(B*N*Dk), K(B*N*Dk), V(B*N*Dv);
+    std::vector<float> Out(B*N*Dv, 0.0f), Ref(B*N*Dv, 0.0f);
+    
+    for (int i = 0; i < B*N*Dk; ++i) {
+        Q[i] = 0.1f * static_cast<float>(i);
+        K[i] = 0.1f * static_cast<float>(i);
+    }
+    for (int i = 0; i < B*N*Dv; ++i) {
+        V[i] = 0.1f * static_cast<float>(i);
+    }
+    
+    scaledDotProductAttentionCPU(Q.data(), K.data(), V.data(), Ref.data(), B, N, Dk, Dv);
+    fusedScaledDotProductAttention(Q.data(), K.data(), V.data(), Out.data(), B, N, Dk, Dv);
+    
+    for (int i = 0; i < B*N*Dv; ++i) {
+        EXPECT_NEAR(Out[i], Ref[i], 1e-3f);
+    }
+}
+
+TEST(FusedScaledDotProductAttention, LargeBatch) {
+    const int B = 8, N = 16, Dk = 32, Dv = 32;
+    std::vector<float> Q(B*N*Dk), K(B*N*Dk), V(B*N*Dv);
+    std::vector<float> Out(B*N*Dv, 0.0f);
+    
+    for (int i = 0; i < B*N*Dk; ++i) {
+        Q[i] = 0.01f * static_cast<float>((i % Dk) - Dk/2);
+        K[i] = 0.01f * static_cast<float>((i % Dk) - Dk/2);
+    }
+    for (int i = 0; i < B*N*Dv; ++i) {
+        V[i] = 0.01f * static_cast<float>((i % Dv) - Dv/2);
+    }
+    
+    fusedScaledDotProductAttention(Q.data(), K.data(), V.data(), Out.data(), B, N, Dk, Dv);
+    
+    for (int i = 0; i < B*N*Dv; ++i) {
+        EXPECT_TRUE(std::isfinite(Out[i]));
+    }
+}
+
+TEST(FusedScaledDotProductAttention, ZeroInput) {
+    const int B = 2, N = 4, Dk = 8, Dv = 8;
+    std::vector<float> Q(B*N*Dk, 0.0f), K(B*N*Dk, 0.0f), V(B*N*Dv, 0.0f);
+    std::vector<float> Out(B*N*Dv, 0.0f);
+    
+    fusedScaledDotProductAttention(Q.data(), K.data(), V.data(), Out.data(), B, N, Dk, Dv);
+    
+    for (int i = 0; i < B*N*Dv; ++i) {
+        EXPECT_NEAR(Out[i], 0.0f, 1e-5f);
+    }
+}
+
+TEST(FusedScaledDotProductAttention, NegativeValues) {
+    const int B = 2, N = 4, Dk = 8, Dv = 8;
+    std::vector<float> Q(B*N*Dk), K(B*N*Dk), V(B*N*Dv);
+    std::vector<float> Out(B*N*Dv, 0.0f), Ref(B*N*Dv, 0.0f);
+    
+    for (int i = 0; i < B*N*Dk; ++i) {
+        Q[i] = -0.1f * static_cast<float>(i % Dk);
+        K[i] = -0.1f * static_cast<float>(i % Dk);
+    }
+    for (int i = 0; i < B*N*Dv; ++i) {
+        V[i] = -0.1f * static_cast<float>(i % Dv);
+    }
+    
+    scaledDotProductAttentionCPU(Q.data(), K.data(), V.data(), Ref.data(), B, N, Dk, Dv);
+    fusedScaledDotProductAttention(Q.data(), K.data(), V.data(), Out.data(), B, N, Dk, Dv);
+    
+    for (int i = 0; i < B*N*Dv; ++i) {
+        EXPECT_NEAR(Out[i], Ref[i], 1e-3f);
+    }
+}
+
