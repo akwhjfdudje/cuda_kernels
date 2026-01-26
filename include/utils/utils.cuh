@@ -1,9 +1,26 @@
 #pragma once
-
 /**
  * @file utils/utils.cuh
  * @brief Shared utility functions for CUDA kernels.
  */
+#include <iostream>
+#include <cstdlib>
+#include <cuda_runtime.h>
+
+/**
+ * @brief Check for CUDA errors and print error message.
+ * 
+ * @param call CUDA call to check.
+ */
+#define CHECK_CUDA(call) do {                                 \
+    cudaError_t err = call;                                   \
+    if (err != cudaSuccess) {                                 \
+        std::cerr << "CUDA error at " << __FILE__ << ":"      \
+                  << __LINE__ << " — "                        \
+                  << cudaGetErrorString(err) << std::endl;    \
+        exit(EXIT_FAILURE);                                   \
+    }                                                         \
+} while (0)
 
 /**
  * @brief Device-side Linear Congruential Generator (LCG) for random number generation.

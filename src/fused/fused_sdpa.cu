@@ -13,15 +13,7 @@
 #include <float.h>
 #include "fused/fused.cuh"
 #include <cassert>
-#define CHECK_CUDA(call) do {                                 \
-    cudaError_t err = call;                                   \
-    if (err != cudaSuccess) {                                 \
-        std::cerr << "CUDA error at " << __FILE__ << ":"      \
-                  << __LINE__ << " — "                        \
-                  << cudaGetErrorString(err) << std::endl;    \
-        exit(EXIT_FAILURE);                                   \
-    }                                                         \
-} while (0)
+#include "utils/utils.cuh"
 
 /**
  * @brief Fused kernel: one block per query row.
