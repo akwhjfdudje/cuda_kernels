@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.18)
 project(cuda_kernels LANGUAGES CXX CUDA)
 
-# === Compiler settings ===
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CUDA_STANDARD 17)
@@ -17,7 +16,7 @@ endif()
 # Debug device flags
 set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -G -g")
 
-# === Globbing source files ===
+# Globbing:
 file(GLOB src_activate src/activate/*.cu)
 file(GLOB src_alg src/alg/*.cu)
 file(GLOB src_reduce src/reduce/*.cu)
@@ -46,7 +45,6 @@ set(source
 
 file(GLOB test tests/*)
 
-# === CUDA Library ===
 add_library(cuda_kernels SHARED ${source})
 
 # Allow linking across multiple .cu files
@@ -58,12 +56,11 @@ set_target_properties(cuda_kernels PROPERTIES
 # Export DLL symbols
 target_compile_definitions(cuda_kernels PRIVATE CUDA_KERNELS_EXPORTS)
 
-# Include directories
 target_include_directories(cuda_kernels
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-# === Unit Tests ===
+# Unit Tests 
 enable_testing()
 include(FetchContent)
 
@@ -88,7 +85,7 @@ target_include_directories(cuda_kernel_tests
 include(GoogleTest)
 gtest_discover_tests(cuda_kernel_tests)
 
-# === Examples ===
+# Examples 
 add_executable(examples
     src/examples.cpp
 )
